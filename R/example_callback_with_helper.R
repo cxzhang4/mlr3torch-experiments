@@ -13,7 +13,7 @@ custom_logger = torch_callback("custom_logger",
     },
     on_batch_end = function() {
         if (is.null(self$moving_training_loss)) {
-            self$moving_loss = self$ctx_last_loss
+            self$moving_loss = self$ctx$last_loss
         } else {
             self$moving_loss = self$alpha * self$ctx_last_loss + (1 - self$alpha) * self$moving_loss
         }
