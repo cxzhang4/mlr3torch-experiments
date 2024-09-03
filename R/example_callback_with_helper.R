@@ -30,6 +30,7 @@ custom_logger = torch_callback("custom_logger",
 )
 
 task = tsk("iris")
+task$divide(0.3)
 mlp = lrn("classif.mlp", callbacks = custom_logger, cb.custom_logger.alpha = 0.05, epochs = 5, batch_size = 64, neurons = 20)
 
 mlp$train(task)
