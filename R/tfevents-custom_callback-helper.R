@@ -1,6 +1,7 @@
 library(mlr3torch)
 library(tfevents)
 library(fs)
+library(mlr3misc)
 
 # custom_tf_logger = torch_callback("custom_tf_logger",
 #   initialize = function() {
@@ -18,35 +19,38 @@ library(fs)
 #   }
 # )
 
+# for each name in the vector measure_names := names(self$ctx$measures_train)
+  # log_event(measure_names[i] = self$ctx$last_scores_train[[measure_names[i]]])
+
+log_helper_train = function(measure_name) {
+  expr <- paste0("log_event(", measure_name, " = self$ctx$last_scores_train[[", measure_name, "]])")
+  expr
+}
+
+log_helper_valid = function(measure_name) {
+  expr <- paste0("log_event(", measure_name, " = self$ctx$last_scores_valid[[", measure_name, "]])")
+  expr
+}
+
 # TODO: extend to multiple measures
 custom_tf_logger_valid = torch_callback("custom_tf_logger",
   on_batch_end = function() {
+    # if (length(self$ctx$last_scores_train) > 0) {
+    #   log_event(train_measure = self$ctx$last_scores_train[[names(self$ctx$measures_train)]])
+    # }
     if (length(self$ctx$last_scores_train) > 0) {
-      log_event(train_measure = self$ctx$last_scores_train[[names(self$ctx$measures_train)]])
+      # map(names(self$ctx$measures_train), )
+      eval(parse(text = log_helper_train("classif.acc")))
     }
-    print(self$ctx$last_scores_train)
   },
   on_batch_valid_end = function() {
+    # if (length(self$ctx$last_scores_valid) > 0) {
+    #   log_event(valid_measure = self$ctx$last_scores_valid[[names(self$ctx$measures_valid)]])
+    # }
     if (length(self$ctx$last_scores_valid) > 0) {
-      log_event(valid_measure = self$ctx$last_scores_valid[[names(self$ctx$measures_valid)]])
+      eval(parse(text = log_helper_valid("classif.acc")))
     }
-    print(self$ctx$last_scores_valid)
   }
 )
-
-task = tsk("iris")
-
-mlp = lrn("classif.mlp", 
-          callbacks = custom_tf_logger_valid,
-          epochs = 5, batch_size = 64, neurons = 20,
-          validate = 0.2, measures_valid = msrs(c("classif.acc")), measures_train = msrs(c("classif.acc"))
-      )
-
-mlp$train(task)
-# print(mlp$model$callbacks$custom_tf_logger)
-
-fs::dir_tree("logs")
-
-tensorflow::tensorboard(normalizePath("logs"), port = 6060)
 
 # need to restart R session to "start from scratch"
