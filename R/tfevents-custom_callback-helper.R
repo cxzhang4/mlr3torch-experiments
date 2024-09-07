@@ -32,6 +32,20 @@ log_helper_valid = function(measure_name) {
   expr
 }
 
+# implementation for one measure
+# custom_tf_logger_valid = torch_callback("custom_tf_logger",
+#   on_batch_end = function() {
+#     if (length(self$ctx$last_scores_train) > 0) {
+#       log_event(train_measure = self$ctx$last_scores_train[[names(self$ctx$measures_train)]])
+#     }
+#   },
+#   on_batch_valid_end = function() {
+#     if (length(self$ctx$last_scores_valid) > 0) {
+#       log_event(valid_measure = self$ctx$last_scores_valid[[names(self$ctx$measures_valid)]])
+#     }
+#   }
+# )
+
 # TODO: extend to multiple measures
 custom_tf_logger_valid = torch_callback("custom_tf_logger",
   on_batch_end = function() {
