@@ -19,18 +19,9 @@ library(mlr3misc)
 #   }
 # )
 
+# what I want
 # for each name in the vector measure_names := names(self$ctx$measures_train)
   # log_event(measure_names[i] = self$ctx$last_scores_train[[measure_names[i]]])
-
-log_helper_train = function(measure_name) {
-  expr <- paste0("log_event(", measure_name, " = self$ctx$last_scores_train[[", measure_name, "]])")
-  expr
-}
-
-log_helper_valid = function(measure_name) {
-  expr <- paste0("log_event(", measure_name, " = self$ctx$last_scores_valid[[", measure_name, "]])")
-  expr
-}
 
 # implementation for one measure
 # custom_tf_logger_valid = torch_callback("custom_tf_logger",
@@ -47,6 +38,16 @@ log_helper_valid = function(measure_name) {
 # )
 
 # TODO: extend to multiple measures
+log_helper_train = function(measure_name) {
+  expr <- paste0("log_event(", measure_name, " = self$ctx$last_scores_train[[", measure_name, "]])")
+  expr
+}
+
+log_helper_valid = function(measure_name) {
+  expr <- paste0("log_event(", measure_name, " = self$ctx$last_scores_valid[[", measure_name, "]])")
+  expr
+}
+
 custom_tf_logger_valid = torch_callback("custom_tf_logger",
   on_batch_end = function() {
     # if (length(self$ctx$last_scores_train) > 0) {
