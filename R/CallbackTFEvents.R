@@ -25,5 +25,14 @@ CallbackSetTFLog = R6Class("CallbackSetTFLog",
                            )
                           )
 
-# 
-# mlr3torch_callbacks$add()
+
+mlr3torch_callbacks$add("progress", function() {
+  TorchCallback$new(
+    callback_generator = CallbackSetTFLog,
+    param_set = ps(),
+    id = "tflog",
+    label = "TFLog",
+    man = "mlr3torch::mlr_callback_set.tflog",
+    packages = "tfevents"
+  )
+})
