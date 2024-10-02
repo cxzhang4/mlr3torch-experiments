@@ -6,14 +6,34 @@ library(checkmate)
 
 custom_tf_logger = torch_callback("custom_tf_logger",
   # TODO: checkmate assertions
-  initialize = function(path = get_default_logdir()) {
-    self$path = assert_path_for_output(path)
-    set_default_logdir(path)
-  },
+  # initialize = function() {
+    # self$path = assert_path_for_output(path)
+    # set_default_logdir(path)
+  # },
   # training measure logged after every batch 
   on_batch_end = function() {
-    # TODO: change to do.call() or mlr3misc::invoke()
+    # TODO: determine whether you can refactor this and the 
+    # validation one into a single function
+    # need to be able to access self$ctx
+    log_event(last_loss = self$ctx$last_loss)
+  },
+  #' @description
+  #' Logs the validation measures as TensorFlow events.
+  #' Meaningful changes happen at the end of each epoch.
+  #' Notably NOT on_batch_valid_end, since there are no gradient steps between validation batches,
+  #' and therefore differences are due to randomness
+  # TODO: log last_scores_train here
+  # TODO: display the appropraite x axis with its label in TensorBoard
+  # relevant when we log different scores at different times
+  on_epoch_end = function() {
+    log_valid_score = function(measure_name) {
+      valid_score = list(self$ctx$last_scores_valid[[measure_name]])
+      names(valid_score) = paste0("valid.", measure_name)
+      do.call(log_event, valid_score)
+    }
+    
     log_train_score = function(measure_name) {
+      # TODO: change this to use last_loss
       train_score = list(self$ctx$last_scores_train[[measure_name]])
       names(train_score) = paste0("train.", measure_name)
       do.call(log_event, train_score)
@@ -22,21 +42,10 @@ custom_tf_logger = torch_callback("custom_tf_logger",
     if (length(self$ctx$last_scores_train)) {
       map(names(self$ctx$measures_train), log_train_score)
     }
-  },
-  # different model only at the end of an epoch
-  # because there are no gradient steps between batch validations
-  # TODO: display the x axis
-  on_epoch_end = function() {
-    log_valid_score = function(measure_name) {
-      valid_score = list(self$ctx$last_scores_valid[[measure_name]])
-      names(valid_score) = paste0("valid.", measure_name)
-      do.call(log_event, valid_score)
-    }
-
+    
     if (length(self$ctx$last_scores_valid)) {
-      map(names(self$ctx$measures_valid), log_valid_score)
+      map(names(self$ctx$measure_valid), log_valid_score)
     }
-  }
-)
+  })
 
 # need to restart R session to "start from scratch"
