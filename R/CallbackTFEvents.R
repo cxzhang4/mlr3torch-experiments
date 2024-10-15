@@ -1,6 +1,10 @@
+library(R6)
+library(paradox)
+library(checkmate)
+
 CallbackSetTFLog = R6Class("CallbackSetTFLog",
                            inherit = CallbackSet,
-                           lock_objects = TRUE,
+                           lock_objects = FALSE,
                            public = list(
                              #' @description
                              #' Creates a new instance of this [R6][R6::R6Class] class.
